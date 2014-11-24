@@ -32,6 +32,9 @@ private:
   void get_deltas(double angle, double *dx, double *dy);
   void update_cell(double ox, double oy, double ot, double r, double nx, double ny, bool clear);
 
+  void updatePointWise(unsigned char* master_map);
+  bool costToMasterCost(unsigned char cost, unsigned char* master_cost);
+
   double to_prob(unsigned char c){ return double(c)/costmap_2d::LETHAL_OBSTACLE; }
   unsigned char to_cost(double p){ return (unsigned char)(p*costmap_2d::LETHAL_OBSTACLE); }
 
@@ -46,6 +49,10 @@ private:
   unsigned int buffered_readings_;
   std::vector<ros::Subscriber> range_subs_;
   double min_x_, min_y_, max_x_, max_y_;
+
+  bool update_pointwise_;
+  boost::mutex update_list_mutex_;
+  std::list<unsigned int> updated_cells_index_;
 
   dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig> *dsrv_;
 };

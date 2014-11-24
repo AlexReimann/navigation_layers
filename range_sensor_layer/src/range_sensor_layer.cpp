@@ -46,6 +46,8 @@ void RangeSensorLayer::onInitialize()
 
   nh.param("clear_on_max_reading", clear_on_max_reading_, false);
 
+  nh.param("update_pointwise", update_pointwise_, false);
+
   // Validate topic names list: it must be a (normally non-empty) list of strings
   if ((topic_names.valid() == false) || (topic_names.getType() != XmlRpc::XmlRpcValue::TypeArray))
   {
@@ -283,6 +285,9 @@ void RangeSensorLayer::update_cell(double ox, double oy, double ot, double r, do
     //ROS_INFO("%f | %f %f | %f", prior, prob_occ, prob_not, new_prob);
     unsigned char c = to_cost(new_prob);
     setCost(x, y, c);
+
+    boost::mutex::scoped_lock lock(update_list_mutex_);
+    updated_cells_index_.push_back(getIndex(x, y));
   }
 }
 
@@ -322,7 +327,17 @@ void RangeSensorLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
     return;
   }
 
+  buffered_readings_ = 0;
+  current_ = true;
+
   unsigned char* master_array = master_grid.getCharMap();
+
+  if(update_pointwise_)
+  {
+    updatePointWise(master_array);
+    return;
+  }
+
   unsigned int span = master_grid.getSizeInCellsX();
   unsigned char clear = to_cost(clear_threshold_), mark = to_cost(mark_threshold_);
 
@@ -331,17 +346,10 @@ void RangeSensorLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
     unsigned int it = j * span + min_i;
     for (int i = min_i; i < max_i; i++)
     {
-      unsigned char prob = costmap_[it];
       unsigned char current;
-      if ((prob > mark) && (prob < NO_INFORMATION))
-      {
-        current = LETHAL_OBSTACLE;
-      }
-      else if (prob < clear)
-      {
-        current = FREE_SPACE;
-      }
-      else
+      unsigned char prob = costmap_[it];
+
+      if(!costToMasterCost(prob, &current))
       {
         it++;
         continue;
@@ -356,9 +364,46 @@ void RangeSensorLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
       it++;
     }
   }
+}
 
-  buffered_readings_ = 0;
-  current_ = true;
+void RangeSensorLayer::updatePointWise(unsigned char* master_map)
+{
+  unsigned char local_cost;
+  unsigned char master_cost;
+
+  boost::mutex::scoped_lock lock(update_list_mutex_);
+  for (std::list<unsigned int>::iterator updated_cell_index_it = updated_cells_index_.begin();
+      updated_cell_index_it != updated_cells_index_.end(); ++updated_cell_index_it)
+  {
+    local_cost = costmap_[*updated_cell_index_it];
+
+    if(!costToMasterCost(local_cost, &master_cost))
+      continue;
+
+    if(master_cost == NO_INFORMATION)
+      continue;
+
+    master_map[*updated_cell_index_it] = master_cost;
+  }
+  updated_cells_index_.clear();
+}
+
+bool RangeSensorLayer::costToMasterCost(unsigned char cost, unsigned char* master_cost)
+{
+  if ((cost > to_cost(mark_threshold_)) && (cost < NO_INFORMATION))
+  {
+    *master_cost = LETHAL_OBSTACLE;
+  }
+  else if (cost < to_cost(clear_threshold_))
+  {
+    *master_cost = FREE_SPACE;
+  }
+  else
+  {
+    return false;
+  }
+
+  return true;
 }
 
 } // end namespace
