@@ -6,10 +6,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   costmap_2d
   sensor_msgs
+  gopher_std_msgs
   pluginlib)
 
 catkin_package(
-CATKIN_DEPENDS sensor_msgs
+CATKIN_DEPENDS sensor_msgs gopher_std_msgs
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -17,6 +18,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_library(${PROJECT_NAME}
   src/extended_range_sensor_layer.cpp
   src/range_sensor_layer.cpp
+  src/range_array_layer.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

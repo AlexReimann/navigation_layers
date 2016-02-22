@@ -28,7 +28,7 @@ public:
                              double* max_y);
   virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
-private:
+protected:
   void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level);
 
   void bufferIncomingRangeMsg(const sensor_msgs::RangeConstPtr& range_message);

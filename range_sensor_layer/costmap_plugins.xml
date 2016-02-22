@@ -5,4 +5,7 @@
   <class type="range_sensor_layer::ExtendedRangeSensorLayer" base_class_type="costmap_2d::Layer">
     <description>Same as RangeSensorLayer but can also subscribe to other layers for updates.</description>
   </class>
+  <class type="range_sensor_layer::RangeArrayLayer" base_class_type="costmap_2d::Layer">
+    <description>Same as ExtendedRangeSensorLayer but for gopher_std_msgs::Ranges (aka an array of sensor_msgs::Range).</description>
+  </class>
 </library>
