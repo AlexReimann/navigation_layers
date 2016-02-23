@@ -8,4 +8,7 @@
   <class type="range_sensor_layer::RangeArrayLayer" base_class_type="costmap_2d::Layer">
     <description>Same as ExtendedRangeSensorLayer but for gopher_std_msgs::Ranges (aka an array of sensor_msgs::Range).</description>
   </class>
+  <class type="range_sensor_layer::BumperArrayLayer" base_class_type="costmap_2d::Layer">
+    <description>Same as range_sensor_layer::RangeArrayLayer but for gopher_std_msgs::Bumpers (aka an array of bumper msgs).</description>
+  </class>
 </library>

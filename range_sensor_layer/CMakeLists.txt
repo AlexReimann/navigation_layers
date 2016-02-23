@@ -19,6 +19,7 @@ add_library(${PROJECT_NAME}
   src/extended_range_sensor_layer.cpp
   src/range_sensor_layer.cpp
   src/range_array_layer.cpp
+  src/bumper_array_layer.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
